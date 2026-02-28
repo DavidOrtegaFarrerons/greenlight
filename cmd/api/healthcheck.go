@@ -1,16 +1,20 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 )
 
 func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
-	json := `{"status": "available", "environment": %q, "version": %q}`
-	json = fmt.Sprintf(json, app.config.env, version)
+	env := envelop{
+		"status": "available",
+		"system_info": map[string]string{
+			"environment": app.config.env,
+			"version":     version,
+		},
+	}
 
-	//Go defaults to Content-Type: text/plain; charset=utf-8" when this is not set
-	w.Header().Set("Content-Type", "application/json")
-
-	w.Write([]byte(json))
+	err := app.writeJSON(w, http.StatusOK, env, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
