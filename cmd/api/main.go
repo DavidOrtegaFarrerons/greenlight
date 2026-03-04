@@ -15,6 +15,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
+	"greenlight.davidortegafarrerons.com/internal/data"
 )
 
 const version = "1.0.0"
@@ -33,6 +34,7 @@ type config struct {
 type application struct {
 	config config
 	logger *slog.Logger
+	models data.Models
 }
 
 func main() {
@@ -79,9 +81,12 @@ func main() {
 	}
 
 	logger.Info("database migrations applied")
+
+	models := data.NewModels(db)
 	app := application{
 		config: cfg,
 		logger: logger,
+		models: models,
 	}
 
 	srv := &http.Server{
